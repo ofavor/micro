@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package transport;
+
+option go_package = "../;transport";
+
+message Request {
+    string id = 1;
+    map<string, string> meta = 2;
+    string service = 3;
+    string method = 4;
+    bytes  data = 5;
+}
+
+message Response {
+    string id = 1;
+    bytes  data = 2;
+}
+
+service Micro {
+    rpc HandleRequest(Request) returns (Response) {}
+}
