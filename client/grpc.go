@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 
+	"github.com/ofavor/micro-lite/internal/log"
 	"github.com/ofavor/micro-lite/internal/transport"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
@@ -23,6 +24,7 @@ func newGRPCClient(opts ...Option) Client {
 }
 
 func (c *grpcClient) Call(ctx context.Context, req Request, rsp proto.Message, opts ...CallOption) error {
+	log.Debug("Call now!")
 	// get grpc conn
 	conn, err := grpc.Dial(
 		"127.0.0.1:8888",
@@ -41,14 +43,17 @@ func (c *grpcClient) Call(ctx context.Context, req Request, rsp proto.Message, o
 		Method:  req.Method(),
 		Data:    data,
 	}
+	log.Debug("Before remote call:", in)
 	ret, err := gc.HandleRequest(ctx, in)
 	if err != nil {
 		return err
 	}
+	log.Debug("After remote call:", ret)
 	err = proto.Unmarshal(ret.Data, rsp)
 	if err != nil {
 		return err
 	}
+	log.Debug("Response:", rsp)
 	return nil
 }
 

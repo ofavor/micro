@@ -12,6 +12,7 @@ type myFoo struct {
 }
 
 func (s *myFoo) Bar(ctx context.Context, req *foo.Request, rsp *foo.Response) error {
+	fmt.Println("myFoo.Bar is handling")
 	rsp.Name = req.Name
 	rsp.Age = req.Age
 	rsp.Adult = req.Age > 4

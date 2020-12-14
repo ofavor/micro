@@ -42,7 +42,7 @@ func getPrefix(lv int) string {
 }
 
 func output(lv int, args ...interface{}) {
-	if currentLevel > lv {
+	if currentLevel >= lv {
 		arr := append([]interface{}{getPrefix(lv)}, args...)
 		if lv == levelFatal {
 			log.Fatal(arr...)
@@ -53,7 +53,7 @@ func output(lv int, args ...interface{}) {
 }
 
 func outputf(lv int, format string, args ...interface{}) {
-	if currentLevel > lv {
+	if currentLevel >= lv {
 		str := fmt.Sprintf(format, args...)
 		if lv == levelFatal {
 			log.Fatalln(getPrefix(lv), str)

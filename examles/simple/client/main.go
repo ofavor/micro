@@ -20,7 +20,10 @@ func main() {
 		for i := 0; i < 10; i++ {
 			time.Sleep(2 * time.Second)
 			f := foo.NewFooService(service.Client())
-			req := &foo.Request{}
+			req := &foo.Request{
+				Name: "Bob ",
+				Age:  uint32(i) + 1,
+			}
 			rsp, err := f.Bar(context.Background(), req)
 			if err != nil {
 				fmt.Println(err)
