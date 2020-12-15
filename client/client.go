@@ -14,7 +14,7 @@ type Client interface {
 // Request interface
 type Request interface {
 	Service() string
-	Method() string
+	Endpoint() string
 	Data() proto.Message
 }
 

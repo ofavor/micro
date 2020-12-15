@@ -8,7 +8,7 @@ message Request {
     string id = 1;
     map<string, string> meta = 2;
     string service = 3;
-    string method = 4;
+    string endpoint = 4;
     bytes  data = 5;
 }
 

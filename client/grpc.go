@@ -39,9 +39,9 @@ func (c *grpcClient) Call(ctx context.Context, req Request, rsp proto.Message, o
 		return err
 	}
 	in := &transport.Request{
-		Service: req.Service(),
-		Method:  req.Method(),
-		Data:    data,
+		Service:  req.Service(),
+		Endpoint: req.Endpoint(),
+		Data:     data,
 	}
 	log.Debug("Before remote call:", in)
 	ret, err := gc.HandleRequest(ctx, in)
@@ -58,16 +58,16 @@ func (c *grpcClient) Call(ctx context.Context, req Request, rsp proto.Message, o
 }
 
 type grpcRequest struct {
-	service string
-	method  string
-	data    proto.Message
+	service  string
+	endpoint string
+	data     proto.Message
 }
 
-func newGRPCRequest(service string, method string, req proto.Message) Request {
+func newGRPCRequest(service string, endpoint string, req proto.Message) Request {
 	return &grpcRequest{
-		service: service,
-		method:  method,
-		data:    req,
+		service:  service,
+		endpoint: endpoint,
+		data:     req,
 	}
 }
 
@@ -75,8 +75,8 @@ func (r *grpcRequest) Service() string {
 	return r.service
 }
 
-func (r *grpcRequest) Method() string {
-	return r.method
+func (r *grpcRequest) Endpoint() string {
+	return r.endpoint
 }
 
 func (r *grpcRequest) Data() proto.Message {

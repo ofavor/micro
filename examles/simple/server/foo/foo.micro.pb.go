@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/ofavor/micro-lite/server"
-	"google.golang.org/protobuf/proto"
 
 	"github.com/ofavor/micro-lite/client"
 )
@@ -25,7 +24,7 @@ type fooService struct {
 }
 
 func (s *fooService) Bar(ctx context.Context, req *Request, opts ...client.CallOption) (*Response, error) {
-	in := client.NewRequest("", "", req)
+	in := client.NewRequest("", "myFoo.Bar", req)
 	out := new(Response)
 	fmt.Println(">>>>>>>>>>>>>>> in ", in)
 	if err := s.c.Call(ctx, in, out); err != nil {
@@ -40,20 +39,6 @@ type FooHandler interface {
 }
 
 func RegisterFooHandler(s server.Server, h FooHandler) {
-	s.AddHandler(&fooHandler{handler: h})
-}
-
-type fooHandler struct {
-	handler FooHandler
-}
-
-func (h *fooHandler) Invoke(ctx context.Context, in []byte) ([]byte, error) {
-	req := &Request{}
-	rsp := &Response{}
-	proto.Unmarshal(in, req)
-	err := h.handler.Bar(ctx, req, rsp)
-	if err != nil {
-		return nil, err
-	}
-	return proto.Marshal(rsp)
+	hdr := server.NewHandler(h)
+	s.Handle(hdr)
 }
