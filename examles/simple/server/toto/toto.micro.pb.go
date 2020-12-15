@@ -2,7 +2,6 @@ package toto
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/ofavor/micro-lite/server"
 
@@ -26,11 +25,9 @@ type totoService struct {
 func (s *totoService) Multiply(ctx context.Context, req *Request, opts ...client.CallOption) (*Response, error) {
 	in := client.NewRequest("", "Toto.Multiply", req)
 	out := new(Response)
-	fmt.Println(">>>>>>>>>>>>>>> in ", in)
 	if err := s.c.Call(ctx, in, out); err != nil {
 		return nil, err
 	}
-	fmt.Println(">>>>>>>>>>>>>>>out ", out)
 	return out, nil
 }
 

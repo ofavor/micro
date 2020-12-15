@@ -6,11 +6,17 @@ import (
 	"net"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/ofavor/micro-lite/internal/log"
 	"github.com/ofavor/micro-lite/internal/transport"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
+)
+
+var (
+	registerInterval = 30 * time.Second
+	registerTTL      = 90 * time.Second
 )
 
 type methodType struct {
@@ -32,6 +38,8 @@ type grpcServer struct {
 	srv      *grpc.Server
 	rcvrMap  map[string]*receiver
 	handlers map[string]Handler
+
+	exit chan chan error
 }
 
 func newGRPCServer(opts ...Option) Server {
@@ -43,11 +51,20 @@ func newGRPCServer(opts ...Option) Server {
 		opts:     options,
 		rcvrMap:  make(map[string]*receiver),
 		handlers: make(map[string]Handler),
+		exit:     make(chan chan error),
 	}
 }
 
 func (s *grpcServer) Init(opt Option) {
 	opt(&s.opts)
+}
+func (s *grpcServer) register() error {
+	log.Debug("Register to server discovery")
+	return nil
+}
+func (s *grpcServer) deregister() error {
+	log.Debug("Deregister from server discovery")
+	return nil
 }
 
 func (s *grpcServer) Start() error {
@@ -65,11 +82,58 @@ func (s *grpcServer) Start() error {
 			log.Error("gRPC server serve error: ", err)
 		}
 	}()
+
+	// register to server discovery
+	go func() {
+		if err := s.register(); err != nil {
+			log.Error("Register to server discovery error: ", err)
+		}
+		t := time.NewTicker(registerInterval)
+		var ch chan error
+	REGISTER_LOOP:
+		for {
+			select {
+			case <-t.C:
+				if err := s.register(); err != nil {
+					log.Error("Register to server discovery error: ", err)
+				}
+			case ch = <-s.exit:
+				break REGISTER_LOOP
+			}
+		}
+		if err := s.deregister(); err != nil {
+			log.Error("Deregister from server discovery error: ", err)
+		}
+		// stop the grpc server
+		exit := make(chan bool)
+
+		go func() {
+			s.srv.GracefulStop()
+			close(exit)
+		}()
+
+		select {
+		case <-exit:
+		case <-time.After(time.Second):
+			s.srv.Stop()
+		}
+
+		ch <- nil
+	}()
+
 	return nil
 }
 
 func (s *grpcServer) Stop() error {
-	return nil
+	ch := make(chan error)
+	s.exit <- ch
+
+	var err error
+	select {
+	case err = <-ch:
+	}
+
+	return err
 }
 
 func (s *grpcServer) Handle(h Handler) error {

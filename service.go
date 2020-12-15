@@ -42,6 +42,7 @@ func (s *service) Server() server.Server {
 func (s *service) Run() error {
 	log.Info("Service is running ...")
 
+	// start the server
 	if err := s.Options.Server.Start(); err != nil {
 		return err
 	}
