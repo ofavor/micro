@@ -77,7 +77,7 @@ func (s *grpcServer) Handle(h Handler) error {
 	rcvr := new(receiver)
 	rcvr.val = reflect.ValueOf(t)
 	rcvr.typ = reflect.TypeOf(t)
-	rcvr.name = reflect.Indirect(rcvr.val).Type().Name()
+	rcvr.name = h.Name() // reflect.Indirect(rcvr.val).Type().Name()
 	rcvr.methods = make(map[string]*methodType)
 
 	log.Debug("Register handler: ", rcvr.name)

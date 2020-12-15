@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ofavor/micro-lite/examles/simple/server/toto"
+
 	"github.com/ofavor/micro-lite"
 	"github.com/ofavor/micro-lite/examles/simple/server/foo"
+	"github.com/ofavor/micro-lite/examles/simple/server/srv"
 )
 
 type myFoo struct {
@@ -27,6 +30,8 @@ func main() {
 		// micro.Address(":8888"),
 	)
 	foo.RegisterFooHandler(service.Server(), &myFoo{})
+	toto.RegisterTotoHandler(service.Server(), &srv.TotoHandler{})
+
 	if err := service.Run(); err != nil {
 		fmt.Println("Service running with error: ", err)
 	}

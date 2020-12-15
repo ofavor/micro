@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package toto;
+
+option go_package = "../toto;toto";
+
+message Request {
+    uint32 val1 = 1;
+    uint32 val2 = 2;
+}
+
+message Response {
+    uint32 result = 1;
+}
+
+service Toto {
+    rpc Multiply(Request) returns (Response) {}
+}

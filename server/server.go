@@ -21,6 +21,6 @@ func NewServer(opts ...Option) Server {
 }
 
 // NewHandler create new handler
-func NewHandler(target interface{}) Handler {
-	return newHandler(target)
+func NewHandler(name string, target interface{}) Handler {
+	return newHandler(name, target)
 }

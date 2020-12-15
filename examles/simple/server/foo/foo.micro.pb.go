@@ -24,7 +24,7 @@ type fooService struct {
 }
 
 func (s *fooService) Bar(ctx context.Context, req *Request, opts ...client.CallOption) (*Response, error) {
-	in := client.NewRequest("", "myFoo.Bar", req)
+	in := client.NewRequest("", "Foo.Bar", req)
 	out := new(Response)
 	fmt.Println(">>>>>>>>>>>>>>> in ", in)
 	if err := s.c.Call(ctx, in, out); err != nil {
@@ -39,6 +39,6 @@ type FooHandler interface {
 }
 
 func RegisterFooHandler(s server.Server, h FooHandler) {
-	hdr := server.NewHandler(h)
+	hdr := server.NewHandler("Foo", h)
 	s.Handle(hdr)
 }
