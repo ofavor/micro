@@ -63,7 +63,8 @@ func (s *grpcServer) Init(opt Option) {
 func (s *grpcServer) register() error {
 	log.Debug("Register to server discovery")
 	n := &registry.Node{
-		ID: s.opts.ID,
+		ID:      s.opts.Name + "-" + s.opts.ID,
+		Address: "127.0.0.1:8888", // unet.HostPort(addr, port),
 	}
 	ps := []*registry.Endpoint{}
 	for _, h := range s.handlers {

@@ -5,12 +5,13 @@ import (
 
 	"github.com/ofavor/micro-lite/internal/log"
 	"github.com/ofavor/micro-lite/internal/transport"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 )
 
 type grpcClient struct {
 	opts Options
+
+	connPool *pool
 }
 
 func newGRPCClient(opts ...Option) Client {
@@ -19,17 +20,22 @@ func newGRPCClient(opts ...Option) Client {
 		o(&options)
 	}
 	return &grpcClient{
-		opts: options,
+		opts:     options,
+		connPool: newPool(),
 	}
 }
 
 func (c *grpcClient) Call(ctx context.Context, req Request, rsp proto.Message, opts ...CallOption) error {
 	log.Debug("Client call:", req.Endpoint())
-	// get grpc conn
-	conn, err := grpc.Dial(
-		"127.0.0.1:8888",
-		grpc.WithInsecure(),
-	)
+	services, err := c.opts.Registry.GetService(req.Service())
+	if err != nil {
+		return err
+	}
+	node, err := c.opts.Selector.Select(services)
+	if err != nil {
+		return err
+	}
+	conn, err := c.connPool.GetConn(node.Address)
 	if err != nil {
 		return err
 	}
