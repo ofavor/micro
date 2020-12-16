@@ -2,19 +2,40 @@ package registry
 
 // Registry interface
 type Registry interface {
-	Register(*Service) error
+	Register(*Service, ...Option) error
 	Deregister(*Service) error
+	GetService(string) ([]*Service, error)
 }
 
 // Service struct
 type Service struct {
-	Name    string
-	Version string
+	Name      string            `json:"name"`
+	Version   string            `json:"version"`
+	Metadata  map[string]string `json:"metadata"`
+	Endpoints []*Endpoint       `json:"endpoints"`
+	Nodes     []*Node           `json:"nodes"`
 }
 
 // Node struct
 type Node struct {
-	ID string
+	ID       string            `json:"id"`
+	Address  string            `json:"address"`
+	Metadata map[string]string `json:"metadata"`
+}
+
+// Endpoint struct
+type Endpoint struct {
+	Name     string            `json:"name"`
+	Request  *Value            `json:"request"`
+	Response *Value            `json:"response"`
+	Metadata map[string]string `json:"metadata"`
+}
+
+// Value struct
+type Value struct {
+	Name   string   `json:"name"`
+	Type   string   `json:"type"`
+	Values []*Value `json:"values"`
 }
 
 // NewRegistry create new registry

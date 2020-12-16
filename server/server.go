@@ -1,5 +1,7 @@
 package server
 
+import "github.com/ofavor/micro-lite/registry"
+
 // Server interface
 type Server interface {
 	Init(Option)
@@ -12,7 +14,7 @@ type Server interface {
 type Handler interface {
 	Name() string
 	Target() interface{}
-	Endpoints() []interface{}
+	Endpoints() []*registry.Endpoint
 }
 
 // NewServer create new server

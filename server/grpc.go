@@ -10,13 +10,14 @@ import (
 
 	"github.com/ofavor/micro-lite/internal/log"
 	"github.com/ofavor/micro-lite/internal/transport"
+	"github.com/ofavor/micro-lite/registry"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 )
 
 var (
 	registerInterval = 30 * time.Second
-	registerTTL      = 90 * time.Second
+	registerTTL      = 60 * time.Second
 )
 
 type methodType struct {
@@ -58,13 +59,36 @@ func newGRPCServer(opts ...Option) Server {
 func (s *grpcServer) Init(opt Option) {
 	opt(&s.opts)
 }
+
 func (s *grpcServer) register() error {
 	log.Debug("Register to server discovery")
-	return nil
+	n := &registry.Node{
+		ID: s.opts.ID,
+	}
+	ps := []*registry.Endpoint{}
+	for _, h := range s.handlers {
+		ps = append(h.Endpoints())
+	}
+	svc := &registry.Service{
+		Name:      s.opts.Name,
+		Version:   s.opts.Version,
+		Nodes:     []*registry.Node{n},
+		Endpoints: ps,
+	}
+	return s.opts.Registry.Register(svc, registry.TTL(registerTTL))
 }
+
 func (s *grpcServer) deregister() error {
 	log.Debug("Deregister from server discovery")
-	return nil
+	n := &registry.Node{
+		ID: s.opts.ID,
+	}
+	svc := &registry.Service{
+		Name:    s.opts.Name,
+		Version: s.opts.Version,
+		Nodes:   []*registry.Node{n},
+	}
+	return s.opts.Registry.Deregister(svc)
 }
 
 func (s *grpcServer) Start() error {

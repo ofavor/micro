@@ -31,7 +31,6 @@ func main() {
 	)
 	foo.RegisterFooHandler(service.Server(), &myFoo{})
 	toto.RegisterTotoHandler(service.Server(), &srv.TotoHandler{})
-
 	if err := service.Run(); err != nil {
 		fmt.Println("Service running with error: ", err)
 	}
