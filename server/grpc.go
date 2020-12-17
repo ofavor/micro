@@ -11,6 +11,7 @@ import (
 	"github.com/ofavor/micro-lite/internal/log"
 	"github.com/ofavor/micro-lite/internal/transport"
 	"github.com/ofavor/micro-lite/registry"
+	"github.com/ofavor/micro-lite/utils/addr"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 )
@@ -62,9 +63,14 @@ func (s *grpcServer) Init(opt Option) {
 
 func (s *grpcServer) register() error {
 	log.Debug("Register to server discovery")
+	host, port, err := net.SplitHostPort(s.opts.Address)
+	if err != nil {
+		return err
+	}
+	addr, err := addr.Extract(host)
 	n := &registry.Node{
 		ID:      s.opts.Name + "-" + s.opts.ID,
-		Address: "127.0.0.1:8888", // unet.HostPort(addr, port),
+		Address: addr + ":" + port, // unet.HostPort(addr, port),
 	}
 	ps := []*registry.Endpoint{}
 	for _, h := range s.handlers {
