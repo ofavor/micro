@@ -20,3 +20,17 @@ func defaultOptions() Options {
 		Selector: selector.NewSelector(),
 	}
 }
+
+// Registry set registry
+func Registry(reg registry.Registry) Option {
+	return func(opts *Options) {
+		opts.Registry = reg
+	}
+}
+
+// Selector set selector
+func Selector(sel selector.Selector) Option {
+	return func(opts *Options) {
+		opts.Selector = sel
+	}
+}

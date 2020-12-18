@@ -1,8 +1,12 @@
 package micro
 
 import (
+	"time"
+
 	"github.com/ofavor/micro-lite/client"
 	"github.com/ofavor/micro-lite/internal/log"
+	"github.com/ofavor/micro-lite/registry"
+	"github.com/ofavor/micro-lite/selector"
 	"github.com/ofavor/micro-lite/server"
 )
 
@@ -47,5 +51,34 @@ func Version(ver string) Option {
 func Address(addr string) Option {
 	return func(opts *Options) {
 		opts.Server.Init(server.Address(addr))
+	}
+}
+
+// Registry set registry
+func Registry(reg registry.Registry) Option {
+	return func(opts *Options) {
+		opts.Server.Init(server.Registry(reg))
+		opts.Client.Init(client.Registry(reg))
+	}
+}
+
+// Selector set selector
+func Selector(sel selector.Selector) Option {
+	return func(opts *Options) {
+		opts.Client.Init(client.Selector(sel))
+	}
+}
+
+// RegisterInterval set server register interval
+func RegisterInterval(d time.Duration) Option {
+	return func(opts *Options) {
+		opts.Server.Init(server.RegisterInterval(d))
+	}
+}
+
+// RegisterTTL set server register TTL
+func RegisterTTL(d time.Duration) Option {
+	return func(opts *Options) {
+		opts.Server.Init(server.RegisterTTL(d))
 	}
 }

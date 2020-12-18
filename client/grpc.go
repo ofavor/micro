@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/ofavor/micro-lite/internal/log"
 	"github.com/ofavor/micro-lite/internal/transport"
 	"google.golang.org/protobuf/proto"
@@ -25,8 +26,12 @@ func newGRPCClient(opts ...Option) Client {
 	}
 }
 
-func (c *grpcClient) Call(ctx context.Context, req Request, rsp proto.Message, opts ...CallOption) error {
-	log.Debug("Client call:", req.Endpoint())
+func (c *grpcClient) Init(o Option) {
+	o(&c.opts)
+}
+
+func (c *grpcClient) Call(ctx context.Context, req Request, rsp interface{}, opts ...CallOption) error {
+	log.Debug("gRPC client call:", req.Service(), req.Endpoint())
 	services, err := c.opts.Registry.GetService(req.Service())
 	if err != nil {
 		return err
@@ -54,7 +59,7 @@ func (c *grpcClient) Call(ctx context.Context, req Request, rsp proto.Message, o
 	if err != nil {
 		return err
 	}
-	err = proto.Unmarshal(ret.Data, rsp)
+	err = proto.Unmarshal(ret.Data, rsp.(proto.Message))
 	if err != nil {
 		return err
 	}
@@ -62,6 +67,7 @@ func (c *grpcClient) Call(ctx context.Context, req Request, rsp proto.Message, o
 }
 
 type grpcRequest struct {
+	id       string
 	service  string
 	endpoint string
 	data     proto.Message
@@ -69,10 +75,15 @@ type grpcRequest struct {
 
 func newGRPCRequest(service string, endpoint string, req proto.Message) Request {
 	return &grpcRequest{
+		id:       uuid.New().String(),
 		service:  service,
 		endpoint: endpoint,
 		data:     req,
 	}
+}
+
+func (r *grpcRequest) ID() string {
+	return r.id
 }
 
 func (r *grpcRequest) Service() string {

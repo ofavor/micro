@@ -16,11 +16,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var (
-	registerInterval = 30 * time.Second
-	registerTTL      = 60 * time.Second
-)
-
 type methodType struct {
 	method      reflect.Method
 	argType     reflect.Type
@@ -30,8 +25,8 @@ type methodType struct {
 
 type receiver struct {
 	name    string                 // name of receiver
-	val     reflect.Value          // receiver of value
-	typ     reflect.Type           // type of the receiver
+	val     reflect.Value          // receiver value
+	typ     reflect.Type           // receiver type
 	methods map[string]*methodType // registered methods
 }
 
@@ -82,7 +77,7 @@ func (s *grpcServer) register() error {
 		Nodes:     []*registry.Node{n},
 		Endpoints: ps,
 	}
-	return s.opts.Registry.Register(svc, registry.TTL(registerTTL))
+	return s.opts.Registry.Register(svc, registry.TTL(s.opts.RegisterTTL))
 }
 
 func (s *grpcServer) deregister() error {
@@ -119,7 +114,7 @@ func (s *grpcServer) Start() error {
 		if err := s.register(); err != nil {
 			log.Error("Register to server discovery error: ", err)
 		}
-		t := time.NewTicker(registerInterval)
+		t := time.NewTicker(s.opts.RegisterInterval)
 		var ch chan error
 	REGISTER_LOOP:
 		for {
@@ -172,7 +167,7 @@ func (s *grpcServer) Handle(h Handler) error {
 	rcvr := new(receiver)
 	rcvr.val = reflect.ValueOf(t)
 	rcvr.typ = reflect.TypeOf(t)
-	rcvr.name = h.Name() // reflect.Indirect(rcvr.val).Type().Name()
+	rcvr.name = h.Name() // name is specified by user instead of reflection
 	rcvr.methods = make(map[string]*methodType)
 
 	log.Debug("Register handler: ", rcvr.name)
@@ -248,11 +243,16 @@ func prepareEndpoint(method reflect.Method) *methodType {
 
 func (s *grpcServer) HandleRequest(ctx context.Context, req *transport.Request) (*transport.Response, error) {
 	log.Debug("Handling request: ", req.Endpoint)
-	arr := strings.Split(req.Endpoint, ".")
+	arr := strings.Split(req.Endpoint, ".") // "Handler.Foo"
 	if len(arr) != 2 {
 		log.Error("Bad request endpoint: ", req.Endpoint)
 		return nil, errors.New("bad request endpoint")
 	}
+
+	// log.Debug("Receiver map:")
+	// for k, v := range s.rcvrMap {
+	// 	log.Debugf("%s => %v", k, v)
+	// }
 
 	rcvr, ok := s.rcvrMap[arr[0]]
 	if !ok {
@@ -280,7 +280,7 @@ func (s *grpcServer) HandleRequest(ctx context.Context, req *transport.Request) 
 	if err != nil {
 		return nil, err
 	}
-	return &transport.Response{Data: data}, nil
+	return &transport.Response{Id: req.Id, Data: data}, nil
 }
 
 func (m *methodType) prepareContext(ctx context.Context) reflect.Value {

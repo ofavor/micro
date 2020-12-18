@@ -12,8 +12,13 @@ import (
 
 // Service interface
 type Service interface {
+	// Client get client instance
 	Client() client.Client
+
+	// Server get server instance
 	Server() server.Server
+
+	// Run the service
 	Run() error
 }
 
@@ -23,27 +28,27 @@ func newService(opts ...Option) Service {
 		o(&options)
 	}
 	return &service{
-		Options: options,
+		opts: options,
 	}
 }
 
 type service struct {
-	Options
+	opts Options
 }
 
 func (s *service) Client() client.Client {
-	return s.Options.Client
+	return s.opts.Client
 }
 
 func (s *service) Server() server.Server {
-	return s.Options.Server
+	return s.opts.Server
 }
 
 func (s *service) Run() error {
 	log.Info("Service is running ...")
 
 	// start the server
-	if err := s.Options.Server.Start(); err != nil {
+	if err := s.opts.Server.Start(); err != nil {
 		return err
 	}
 
@@ -53,7 +58,7 @@ func (s *service) Run() error {
 	case <-ch:
 	}
 
-	if err := s.Options.Server.Stop(); err != nil {
+	if err := s.opts.Server.Stop(); err != nil {
 		return err
 	}
 

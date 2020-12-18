@@ -1,17 +1,21 @@
 package server
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/ofavor/micro-lite/registry"
 )
 
 // Options for server
 type Options struct {
-	ID       string
-	Name     string
-	Version  string
-	Address  string
-	Registry registry.Registry
+	ID               string
+	Name             string
+	Version          string
+	Address          string
+	Registry         registry.Registry
+	RegisterInterval time.Duration
+	RegisterTTL      time.Duration
 }
 
 // Option function to set server options
@@ -19,11 +23,13 @@ type Option func(opts *Options)
 
 func defaultOptions() Options {
 	return Options{
-		ID:       uuid.New().String(),
-		Name:     "server",
-		Version:  "latest",
-		Address:  ":8888",
-		Registry: registry.NewRegistry(),
+		ID:               uuid.New().String(),
+		Name:             "server",
+		Version:          "1.0.0",
+		Address:          ":8888",
+		Registry:         registry.NewRegistry(),
+		RegisterInterval: 30 * time.Second,
+		RegisterTTL:      60 * time.Second,
 	}
 }
 
@@ -59,5 +65,19 @@ func Address(addr string) Option {
 func Registry(reg registry.Registry) Option {
 	return func(opts *Options) {
 		opts.Registry = reg
+	}
+}
+
+// RegisterInterval set register interval
+func RegisterInterval(d time.Duration) Option {
+	return func(opts *Options) {
+		opts.RegisterInterval = d
+	}
+}
+
+// RegisterTTL set register TTL
+func RegisterTTL(d time.Duration) Option {
+	return func(opts *Options) {
+		opts.RegisterTTL = d
 	}
 }

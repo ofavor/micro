@@ -1,6 +1,15 @@
 # micro
 
-Simple microservice framework for golang
+Simple microservice framework for golang. 
+
+Only provides features as: RPC Client/Server, Service Discovery.
+
+RPC trasport is based on gRPC.
+
+References:
+
+* [go-micro v2](https://github.com/asim/go-micro)
+* [nano](https://github.com/lonng/nano)
 
 ## Issues
 

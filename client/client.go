@@ -8,11 +8,16 @@ import (
 
 // Client interface
 type Client interface {
-	Call(ctx context.Context, req Request, rsp proto.Message, opts ...CallOption) error
+	// Init client with option function
+	Init(Option)
+
+	// Call remote function
+	Call(ctx context.Context, req Request, rsp interface{}, opts ...CallOption) error
 }
 
 // Request interface
 type Request interface {
+	ID() string
 	Service() string
 	Endpoint() string
 	Data() proto.Message
@@ -20,6 +25,7 @@ type Request interface {
 
 // Response interface
 type Response interface {
+	ID() string
 	Data() proto.Message
 }
 
