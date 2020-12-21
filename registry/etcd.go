@@ -16,6 +16,9 @@ var (
 
 	// ErrNotFound error when GetService is called
 	ErrNotFound = errors.New("service not found")
+
+	prefix        = "/micro/registry/"
+	clientTimeout = 3 * time.Second
 )
 
 type etcdRegistry struct {
@@ -44,11 +47,6 @@ func newETCDRegistry(opts ...Option) Registry {
 	}
 }
 
-var (
-	prefix        = "/micro/registry/"
-	clientTimeout = 3 * time.Second
-)
-
 func encode(s *Service) string {
 	b, _ := json.Marshal(s)
 	return string(b)
@@ -71,10 +69,10 @@ func servicePath(s string) string {
 }
 
 func (r *etcdRegistry) registerNode(svc *Service, node *Node) error {
-	ss, _ := r.GetService(svc.Name)
-	for _, s := range ss {
-		log.Debug("Get service:", s)
-	}
+	// ss, _ := r.GetService(svc.Name)
+	// for _, s := range ss {
+	// 	log.Debug("Get service:", s)
+	// }
 
 	service := &Service{
 		Name:      svc.Name,

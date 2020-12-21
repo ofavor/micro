@@ -2,8 +2,13 @@ package registry
 
 // Registry interface
 type Registry interface {
+	// Register service to registry
 	Register(*Service, ...Option) error
+
+	// Deregister service from registry
 	Deregister(*Service) error
+
+	// GetService by specifying service name
 	GetService(string) ([]*Service, error)
 }
 

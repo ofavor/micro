@@ -171,10 +171,10 @@ func (s *grpcServer) Handle(h Handler) error {
 	rcvr.methods = make(map[string]*methodType)
 
 	log.Debug("Register handler: ", rcvr.name)
-	// Install the methods
+	// prepare the methods
 	for m := 0; m < rcvr.typ.NumMethod(); m++ {
 		method := rcvr.typ.Method(m)
-		if mt := prepareEndpoint(method); mt != nil {
+		if mt := prepareMethod(method); mt != nil {
 			log.Debug("Endpoint prepared: ", method.Name)
 			rcvr.methods[method.Name] = mt
 		}
@@ -193,9 +193,9 @@ var (
 	typeOfProtoMessage = reflect.TypeOf((*proto.Message)(nil)).Elem()
 )
 
-// prepareEndpoint() returns a methodType for the provided method or nil
+// prepareMethod() returns a methodType for the provided method or nil
 // in case if the method was unsuitable.
-func prepareEndpoint(method reflect.Method) *methodType {
+func prepareMethod(method reflect.Method) *methodType {
 	mtype := method.Type
 	mname := method.Name
 	var replyType, argType, contextType reflect.Type
@@ -216,19 +216,19 @@ func prepareEndpoint(method reflect.Method) *methodType {
 		return nil
 	}
 
-	// First arg need not be a pointer.
+	// Arg type must be type of proto.Message.
 	if !argType.Implements(typeOfProtoMessage) {
-		log.Errorf("%v argument type not proto.Message: %v", mname, argType)
+		log.Errorf("method %v argument type not proto.Message: %v", mname, argType)
 		return nil
 	}
 
-	// Reply type must be exported.
+	// Reply type must be type of proto.Message.
 	if !replyType.Implements(typeOfProtoMessage) {
 		log.Errorf("method %v reply type not proto.Message: %v", mname, replyType)
 		return nil
 	}
 
-	// Endpoint() needs one out.
+	// needs one out.
 	if mtype.NumOut() != 1 {
 		log.Errorf("method %v has wrong number of outs: %v", mname, mtype.NumOut())
 		return nil
