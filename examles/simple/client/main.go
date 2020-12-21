@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ofavor/micro-lite/client/selector"
 	"github.com/ofavor/micro-lite/examles/simple/server/toto"
 
 	"github.com/ofavor/micro-lite"
+	"github.com/ofavor/micro-lite/client"
 )
 
 func main() {
@@ -52,7 +54,10 @@ func main() {
 				Val1: 30,
 				Val2: 40,
 			}
-			rsp, err := t.Multiply(context.Background(), req)
+			rsp, err := t.Multiply(context.Background(), req,
+				client.WithSelectOption(selector.WithAddressFilter([]string{"192.168.199.161:8888"})),
+				client.WithSelectOption(selector.WithIDFilter([]string{"srv1"})),
+			)
 
 			if err != nil {
 				fmt.Println("Error:", err)
@@ -61,23 +66,23 @@ func main() {
 			}
 		}
 	}()
-	go func() {
-		for {
-			time.Sleep(2 * time.Second)
-			t := toto.NewTotoService(service.Client())
-			req := &toto.Request{
-				Val1: 30,
-				Val2: 40,
-			}
-			rsp, err := t.Multiply(context.Background(), req)
+	// go func() {
+	// 	for {
+	// 		time.Sleep(2 * time.Second)
+	// 		t := toto.NewTotoService(service.Client())
+	// 		req := &toto.Request{
+	// 			Val1: 30,
+	// 			Val2: 40,
+	// 		}
+	// 		rsp, err := t.Multiply(context.Background(), req)
 
-			if err != nil {
-				fmt.Println("Error:", err)
-			} else {
-				fmt.Println(req.Val1, " x ", req.Val2, " = ", rsp.Result)
-			}
-		}
-	}()
+	// 		if err != nil {
+	// 			fmt.Println("Error:", err)
+	// 		} else {
+	// 			fmt.Println(req.Val1, " x ", req.Val2, " = ", rsp.Result)
+	// 		}
+	// 	}
+	// }()
 	if err := service.Run(); err != nil {
 		fmt.Println("Service running with error: ", err)
 	}

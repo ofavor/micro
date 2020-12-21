@@ -64,7 +64,7 @@ func (s *grpcServer) register() error {
 	}
 	addr, err := addr.Extract(host)
 	n := &registry.Node{
-		ID:      s.opts.Name + "-" + s.opts.ID,
+		ID:/*s.opts.Name + "-" + */ s.opts.ID,
 		Address: addr + ":" + port, // unet.HostPort(addr, port),
 	}
 	ps := []*registry.Endpoint{}

@@ -36,34 +36,48 @@ func (c *grpcClient) Call(ctx context.Context, req Request, rsp interface{}, opt
 	if err != nil {
 		return err
 	}
-	node, err := c.opts.Selector.Select(services)
-	if err != nil {
-		return err
-	}
-	conn, err := c.connPool.GetConn(node.Address)
-	if err != nil {
-		return err
-	}
-	gc := transport.NewMicroClient(conn)
-	data, err := proto.Marshal(req.Data())
-	if err != nil {
-		return err
-	}
-	in := &transport.Request{
-		Service:  req.Service(),
-		Endpoint: req.Endpoint(),
-		Data:     data,
-	}
 
-	ret, err := gc.HandleRequest(ctx, in)
-	if err != nil {
-		return err
+	callOpts := c.opts.CallOpts
+	for _, co := range opts {
+		co(&callOpts)
 	}
-	err = proto.Unmarshal(ret.Data, rsp.(proto.Message))
-	if err != nil {
-		return err
+	log.Debug("Call options:", callOpts)
+	var rErr error
+	retries := callOpts.Retry
+
+	for retries > 0 {
+		node, err := c.opts.Selector.Select(services, callOpts.SelectOpts...)
+		if err != nil {
+			return err
+		}
+		conn, err := c.connPool.GetConn(node.Address)
+		if err != nil {
+			return err
+		}
+		gc := transport.NewMicroClient(conn)
+		data, err := proto.Marshal(req.Data())
+		if err != nil {
+			return err
+		}
+		in := &transport.Request{
+			Service:  req.Service(),
+			Endpoint: req.Endpoint(),
+			Data:     data,
+		}
+
+		ret, err := gc.HandleRequest(ctx, in)
+		if err != nil { // request failed, retry
+			retries--
+			rErr = err
+			continue
+		}
+		err = proto.Unmarshal(ret.Data, rsp.(proto.Message))
+		if err != nil {
+			return err
+		}
+		return nil
 	}
-	return nil
+	return rErr
 }
 
 type grpcRequest struct {

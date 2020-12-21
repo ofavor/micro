@@ -26,6 +26,7 @@ func main() {
 	service := micro.NewService(
 		micro.LogLevel("debug"),
 		micro.Name("simple.server"),
+		micro.ID("srv1"),
 		// micro.Version("latest"),
 		// micro.Address(":8888"),
 	)

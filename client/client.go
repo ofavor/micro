@@ -29,12 +29,6 @@ type Response interface {
 	Data() proto.Message
 }
 
-// CallOptions rpc call options
-type CallOptions struct{}
-
-// CallOption function to set rpc call options
-type CallOption func(opts *CallOptions)
-
 // NewClient create new client
 func NewClient(opts ...Option) Client {
 	return newGRPCClient(opts...)

@@ -4,9 +4,9 @@ import (
 	"time"
 
 	"github.com/ofavor/micro-lite/client"
+	"github.com/ofavor/micro-lite/client/selector"
 	"github.com/ofavor/micro-lite/internal/log"
 	"github.com/ofavor/micro-lite/registry"
-	"github.com/ofavor/micro-lite/selector"
 	"github.com/ofavor/micro-lite/server"
 )
 
@@ -33,6 +33,13 @@ func LogLevel(lv string) Option {
 	}
 }
 
+// ID set id
+func ID(id string) Option {
+	return func(opts *Options) {
+		opts.Server.Init(server.ID(id))
+	}
+}
+
 // Name set name
 func Name(name string) Option {
 	return func(opts *Options) {
@@ -40,7 +47,7 @@ func Name(name string) Option {
 	}
 }
 
-// Version set version
+// Version set version. Must be in the format of "x.y.z"
 func Version(ver string) Option {
 	return func(opts *Options) {
 		opts.Server.Init(server.Version(ver))

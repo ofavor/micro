@@ -4,7 +4,7 @@ import "github.com/ofavor/micro-lite/registry"
 
 // Selector interface
 type Selector interface {
-	Select([]*registry.Service) (*registry.Node, error)
+	Select([]*registry.Service, ...SelectOption) (*registry.Node, error)
 }
 
 // NewSelector create new selector

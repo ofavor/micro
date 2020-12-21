@@ -25,7 +25,7 @@ type fooService struct {
 func (s *fooService) Bar(ctx context.Context, req *Request, opts ...client.CallOption) (*Response, error) {
 	in := client.NewRequest("simple.server", "Foo.Bar", req)
 	out := new(Response)
-	if err := s.c.Call(ctx, in, out); err != nil {
+	if err := s.c.Call(ctx, in, out, opts...); err != nil {
 		return nil, err
 	}
 	return out, nil
