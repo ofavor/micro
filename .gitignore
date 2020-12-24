@@ -34,3 +34,6 @@ _cgo_export.*
 *~
 *.swp
 *.swo
+
+# micro-lite files
+cmd/protoc-gen-micro/protoc-gen-micro

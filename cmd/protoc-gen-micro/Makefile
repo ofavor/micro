@@ -10,4 +10,4 @@ MAC       := "Darwin"
 .PHONY: proto
 
 proto:
-	@cd ./server/proto/ && protoc --go_out=./ --micro_out=./ *.proto
+	@cd ./example/proto/ && protoc --go_out=./ --micro_out=./ *.proto

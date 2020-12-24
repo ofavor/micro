@@ -49,13 +49,13 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(2 * time.Second)
-			t := toto.NewTotoService(service.Client())
+			t := toto.NewTotoService("simple.server", service.Client())
 			req := &toto.Request{
 				Val1: 30,
 				Val2: 40,
 			}
 			rsp, err := t.Multiply(context.Background(), req,
-				client.WithSelectOption(selector.WithAddressFilter([]string{"192.168.199.161:8888"})),
+				// client.WithSelectOption(selector.WithAddressFilter([]string{"172.20.10.2:8888"})), // test selector with ip address
 				client.WithSelectOption(selector.WithIDFilter([]string{"srv1"})),
 			)
 
