@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package foo;
+
+option go_package = "../foo;foo";
+
+message Request {
+    string  name = 1;
+    uint32  age = 2;
+}
+
+message Response {
+    string  name = 1;
+    uint32  age = 2;
+    bool    adult = 3;
+}
+
+service Foo {
+    rpc Bar(Request) returns (Response) {}
+}
