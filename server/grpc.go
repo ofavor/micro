@@ -52,12 +52,16 @@ func newGRPCServer(opts ...Option) Server {
 	}
 }
 
+func (s *grpcServer) ID() string {
+	return s.opts.ID
+}
+
 func (s *grpcServer) Init(opt Option) {
 	opt(&s.opts)
 }
 
 func (s *grpcServer) register() error {
-	log.Debug("Register to server discovery")
+	log.Debug("Register to service discovery")
 	host, port, err := net.SplitHostPort(s.opts.Address)
 	if err != nil {
 		return err
@@ -81,7 +85,7 @@ func (s *grpcServer) register() error {
 }
 
 func (s *grpcServer) deregister() error {
-	log.Debug("Deregister from server discovery")
+	log.Debug("Deregister from service discovery")
 	n := &registry.Node{
 		ID: s.opts.ID,
 	}
@@ -109,10 +113,10 @@ func (s *grpcServer) Start() error {
 		}
 	}()
 
-	// register to server discovery
+	// register to service discovery
 	go func() {
 		if err := s.register(); err != nil {
-			log.Error("Register to server discovery error: ", err)
+			log.Error("Register to service discovery error: ", err)
 		}
 		t := time.NewTicker(s.opts.RegisterInterval)
 		var ch chan error
@@ -121,14 +125,14 @@ func (s *grpcServer) Start() error {
 			select {
 			case <-t.C:
 				if err := s.register(); err != nil {
-					log.Error("Register to server discovery error: ", err)
+					log.Error("Register to service discovery error: ", err)
 				}
 			case ch = <-s.exit:
 				break REGISTER_LOOP
 			}
 		}
 		if err := s.deregister(); err != nil {
-			log.Error("Deregister from server discovery error: ", err)
+			log.Error("Deregister from service discovery error: ", err)
 		}
 		// stop the grpc server
 		exit := make(chan bool)

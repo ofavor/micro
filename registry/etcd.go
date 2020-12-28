@@ -6,6 +6,7 @@ import (
 	"errors"
 	"path"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
@@ -22,6 +23,7 @@ var (
 )
 
 type etcdRegistry struct {
+	sync.RWMutex
 	opts Options
 
 	client *clientv3.Client
@@ -33,18 +35,33 @@ func newETCDRegistry(opts ...Option) Registry {
 		o(&options)
 	}
 
-	cfg := clientv3.Config{
-		Endpoints: options.Addrs,
+	return &etcdRegistry{
+		opts: options,
 	}
+}
+
+func (r *etcdRegistry) getClient() (*clientv3.Client, error) {
+	r.RLock()
+	if r.client != nil {
+		r.RUnlock()
+		return r.client, nil
+	}
+	r.RUnlock()
+
+	r.Lock()
+	defer r.Unlock()
+	cfg := clientv3.Config{
+		Endpoints: r.opts.Addrs,
+	}
+	// log.Debug("Etcd registry config:", cfg)
+
 	cli, err := clientv3.New(cfg)
 	if err != nil {
 		log.Error("Create ectd client error: ", err)
+		return nil, err
 	}
-
-	return &etcdRegistry{
-		opts:   options,
-		client: cli,
-	}
+	r.client = cli
+	return cli, nil
 }
 
 func encode(s *Service) string {
@@ -69,10 +86,10 @@ func servicePath(s string) string {
 }
 
 func (r *etcdRegistry) registerNode(svc *Service, node *Node) error {
-	// ss, _ := r.GetService(svc.Name)
-	// for _, s := range ss {
-	// 	log.Debug("Get service:", s)
-	// }
+	cli, err := r.getClient()
+	if err != nil {
+		return err
+	}
 
 	service := &Service{
 		Name:      svc.Name,
@@ -86,8 +103,8 @@ func (r *etcdRegistry) registerNode(svc *Service, node *Node) error {
 	log.Debugf("Register service node: %s", key)
 	ctx, cancel := context.WithTimeout(context.Background(), clientTimeout)
 	defer cancel()
-	lgr, err := r.client.Grant(ctx, int64(r.opts.TTL.Seconds()))
-	_, err = r.client.Put(ctx, key, val, clientv3.WithLease(lgr.ID))
+	lgr, err := cli.Grant(ctx, int64(r.opts.TTL.Seconds()))
+	_, err = cli.Put(ctx, key, val, clientv3.WithLease(lgr.ID))
 	return err
 }
 
@@ -108,13 +125,17 @@ func (r *etcdRegistry) Register(svc *Service, opts ...Option) error {
 }
 
 func (r *etcdRegistry) Deregister(svc *Service) error {
+	cli, err := r.getClient()
+	if err != nil {
+		return err
+	}
 	for _, n := range svc.Nodes {
 		ctx, cancel := context.WithTimeout(context.Background(), clientTimeout)
 		defer cancel()
 
 		path := nodePath(svc.Name, n.ID)
 		log.Debugf("Deregistering service node: %s", path)
-		_, err := r.client.Delete(ctx, path)
+		_, err := cli.Delete(ctx, path)
 		if err != nil {
 			return err
 		}
@@ -123,10 +144,14 @@ func (r *etcdRegistry) Deregister(svc *Service) error {
 }
 
 func (r *etcdRegistry) GetService(name string) ([]*Service, error) {
+	cli, err := r.getClient()
+	if err != nil {
+		return nil, err
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), clientTimeout)
 	defer cancel()
 
-	rsp, err := r.client.Get(ctx, servicePath(name)+"/", clientv3.WithPrefix(), clientv3.WithSerializable())
+	rsp, err := cli.Get(ctx, servicePath(name)+"/", clientv3.WithPrefix(), clientv3.WithSerializable())
 	if err != nil {
 		return nil, err
 	}
