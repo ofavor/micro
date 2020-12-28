@@ -2,6 +2,9 @@ package registry
 
 // Registry interface
 type Registry interface {
+	// Initialize registry with option
+	Init(Option)
+
 	// Register service to registry
 	Register(*Service, ...Option) error
 

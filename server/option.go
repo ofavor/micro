@@ -68,6 +68,13 @@ func Registry(reg registry.Registry) Option {
 	}
 }
 
+// RegistryAddrs set registry addresses
+func RegistryAddrs(addrs []string) Option {
+	return func(opts *Options) {
+		opts.Registry.Init(registry.Addrs(addrs))
+	}
+}
+
 // RegisterInterval set register interval
 func RegisterInterval(d time.Duration) Option {
 	return func(opts *Options) {

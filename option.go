@@ -69,6 +69,14 @@ func Registry(reg registry.Registry) Option {
 	}
 }
 
+// RegistryAddrs set registry address
+func RegistryAddrs(addrs []string) Option {
+	return func(opts *Options) {
+		opts.Server.Init(server.RegistryAddrs(addrs))
+		opts.Client.Init(client.RegistryAddrs(addrs))
+	}
+}
+
 // Selector set selector
 func Selector(sel selector.Selector) Option {
 	return func(opts *Options) {

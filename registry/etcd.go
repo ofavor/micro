@@ -91,6 +91,10 @@ func (r *etcdRegistry) registerNode(svc *Service, node *Node) error {
 	return err
 }
 
+func (r *etcdRegistry) Init(o Option) {
+	o(&r.opts)
+}
+
 func (r *etcdRegistry) Register(svc *Service, opts ...Option) error {
 	for _, o := range opts {
 		o(&r.opts)
