@@ -73,7 +73,7 @@ func Registry(reg registry.Registry) Option {
 func RegistryAddrs(addrs []string) Option {
 	return func(opts *Options) {
 		opts.Server.Init(server.RegistryAddrs(addrs))
-		// opts.Client.Init(client.RegistryAddrs(addrs)) // same registry
+		opts.Client.Init(client.RegistryAddrs(addrs))
 	}
 }
 
