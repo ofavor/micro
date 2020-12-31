@@ -29,6 +29,7 @@ func main() {
 		micro.ID("srv1"),
 		// micro.Version("latest"),
 		// micro.Address(":8888"),
+		micro.RegistryAddrs([]string{"etcd"}),
 	)
 	foo.RegisterFooHandler(service.Server(), &myFoo{})
 	toto.RegisterTotoHandler(service.Server(), &srv.TotoHandler{})

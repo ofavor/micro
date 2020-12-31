@@ -4,6 +4,9 @@ import "github.com/ofavor/micro-lite/registry"
 
 // Server interface
 type Server interface {
+	// ID get server id
+	ID() string
+
 	// Init server with option
 	Init(Option)
 
