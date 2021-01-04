@@ -2,17 +2,22 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/ofavor/micro-lite/examples/simple/server/toto"
+
 	"github.com/ofavor/micro-lite/client/selector"
-	"github.com/ofavor/micro-lite/examles/simple/server/toto"
 
 	"github.com/ofavor/micro-lite"
 	"github.com/ofavor/micro-lite/client"
 )
 
 func main() {
+	regAddrs := flag.String("registry_addrs", "127.0.0.1:2379", "registry addresses, splitted by ','")
+	flag.Parse()
 	// if true {
 	// 	arr := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	// 	for i, a := range arr {
@@ -29,6 +34,7 @@ func main() {
 		micro.Name("simple.client"),
 		// micro.Version("latest"),
 		micro.Address(":8889"),
+		micro.RegistryAddrs(strings.Split(*regAddrs, ",")),
 	)
 	// go func() {
 	// 	for i := 0; ; i++ {

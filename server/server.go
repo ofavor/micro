@@ -1,6 +1,11 @@
 package server
 
-import "github.com/ofavor/micro-lite/registry"
+import (
+	"context"
+
+	"github.com/ofavor/micro-lite/internal/transport"
+	"github.com/ofavor/micro-lite/registry"
+)
 
 // Server interface
 type Server interface {
@@ -31,6 +36,12 @@ type Handler interface {
 	// Endpoints get handler endpoints
 	Endpoints() []*registry.Endpoint
 }
+
+// HandlerFunc handler function
+type HandlerFunc func(ctx context.Context, req *transport.Request, rsp interface{}) error
+
+// HandlerWrapper wrapper for handler function
+type HandlerWrapper func(HandlerFunc) HandlerFunc
 
 // NewServer create new server
 func NewServer(opts ...Option) Server {
