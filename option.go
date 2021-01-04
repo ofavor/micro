@@ -97,3 +97,12 @@ func RegisterTTL(d time.Duration) Option {
 		opts.Server.Init(server.RegisterTTL(d))
 	}
 }
+
+// WrapHandler wrap server handler
+func WrapHandler(ws ...server.HandlerWrapper) Option {
+	return func(opts *Options) {
+		for _, w := range ws {
+			opts.Server.Init(server.WrapHandler(w))
+		}
+	}
+}

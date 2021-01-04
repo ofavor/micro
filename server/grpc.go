@@ -3,8 +3,10 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"reflect"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -276,9 +278,34 @@ func (s *grpcServer) HandleRequest(ctx context.Context, req *transport.Request) 
 	}
 	replyv := reflect.New(method.replyType.Elem())
 	function := method.method.Func
-	returns := function.Call([]reflect.Value{rcvr.val, method.prepareContext(ctx), reflect.ValueOf(argv.Interface()), reflect.ValueOf(replyv.Interface())})
-	if rerr := returns[0].Interface(); rerr != nil {
-		return nil, rerr.(error)
+
+	fn := func(fctx context.Context, freq *transport.Request, frsp interface{}) error {
+		var rerr error
+		defer func() {
+			if r := recover(); r != nil {
+				log.Error("panic recovered:", r)
+				log.Error(string(debug.Stack()))
+				rerr = fmt.Errorf("panic recovered:%v", r)
+			}
+		}()
+
+		returns := function.Call([]reflect.Value{rcvr.val, method.prepareContext(fctx), reflect.ValueOf(argv.Interface()), reflect.ValueOf(frsp)})
+		if terr := returns[0].Interface(); terr != nil {
+			rerr = terr.(error)
+		}
+		return rerr
+	}
+
+	for _, hw := range s.opts.HdlrWrappers {
+		fn = hw(fn)
+	}
+
+	// returns := function.Call([]reflect.Value{rcvr.val, method.prepareContext(ctx), reflect.ValueOf(argv.Interface()), reflect.ValueOf(replyv.Interface())})
+	// if rerr := returns[0].Interface(); rerr != nil {
+	// 	return nil, rerr.(error)
+	// }
+	if err = fn(ctx, req, replyv.Interface()); err != nil {
+		return nil, err
 	}
 	data, err := proto.Marshal(replyv.Interface().(proto.Message))
 	if err != nil {

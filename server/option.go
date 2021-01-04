@@ -16,6 +16,7 @@ type Options struct {
 	Registry         registry.Registry
 	RegisterInterval time.Duration
 	RegisterTTL      time.Duration
+	HdlrWrappers     []HandlerWrapper
 }
 
 // Option function to set server options
@@ -30,6 +31,7 @@ func defaultOptions() Options {
 		Registry:         registry.NewRegistry(),
 		RegisterInterval: 30 * time.Second,
 		RegisterTTL:      60 * time.Second,
+		HdlrWrappers:     []HandlerWrapper{},
 	}
 }
 
@@ -86,5 +88,12 @@ func RegisterInterval(d time.Duration) Option {
 func RegisterTTL(d time.Duration) Option {
 	return func(opts *Options) {
 		opts.RegisterTTL = d
+	}
+}
+
+// WrapHandler add handler wrapper
+func WrapHandler(w HandlerWrapper) Option {
+	return func(opts *Options) {
+		opts.HdlrWrappers = append(opts.HdlrWrappers, w)
 	}
 }
